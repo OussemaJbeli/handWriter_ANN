@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwritten Digit Recognition</title>
+    <style>
+        canvas {
+            width: 200px; 
+            height: 200px; 
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Handwritten Digit Recognition</h1>
+    <canvas id="canvas" width="150" height="150"></canvas>
+    <button id="predict-button">Predict</button>
+    <button id="clear-button">Clear</button>
+
+    <div id="result"></div>
+
+    <script>
+        const scaleFactor = 10;  // Adjust this value as needed
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const predictButton = document.getElementById('predict-button');
+        const clearButton = document.getElementById('clear-button');
+        const resultDiv = document.getElementById('result');
+        let drawing = false;
+        // Set canvas background color to white
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        canvas.addEventListener('mousedown', () => {
+            drawing = true;
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            drawing = false;
+            ctx.beginPath();
+        });
+
+        canvas.addEventListener('mousemove', draw);
+
+
+        function draw(event) {
+            if (!drawing) return;
+        
+            // Increase canvas resolution for smoother drawing
+            const scale = 5; // Adjust this scale factor as needed
+            ctx.lineWidth = 1 * scale;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'black';
+        
+            // Scale down the drawing for display on the canvas
+            ctx.lineTo(
+                event.clientX - canvas.offsetLeft,
+                event.clientY - canvas.offsetTop
+            );
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(
+                event.clientX - canvas.offsetLeft,
+                event.clientY - canvas.offsetTop
+            );
+        
+            // Draw the scaled-down version on the canvas
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(
+                event.clientX - canvas.offsetLeft,
+                event.clientY - canvas.offsetTop,
+                0.5 * scale,
+                0,
+                2 * Math.PI
+            );
+            ctx.fillStyle = 'black';
+            ctx.fill();
+        }
+        
+        predictButton.addEventListener('click', () => {
+            const imageData = canvas.toDataURL('image/png');
+            sendImageForPrediction(imageData);
+        });
+
+        clearButton.addEventListener('click', () => {
+            clearCanvas();
+        });
+
+        function sendImageForPrediction(imageData) {
+            // Display loading indicator while processing
+            resultDiv.innerText = 'Predicting...';
+
+            const img = new Image();
+            img.src = imageData;
+
+            img.onload = function() {
+                const resizedCanvas = document.createElement('canvas');
+                resizedCanvas.width = 28;
+                resizedCanvas.height = 28;
+                const resizedCtx = resizedCanvas.getContext('2d');
+
+                // Enable image smoothing for better quality
+                resizedCtx.imageSmoothingEnabled = true;
+
+                // Draw the resized image onto the new canvas
+                resizedCtx.drawImage(img, 0, 0, 28, 28);
+
+                const resizedImageData = resizedCanvas.toDataURL('image/png');
+
+                fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ image: resizedImageData })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Display the prediction result
+                    if (data.predicted_digit !== undefined) {
+                        resultDiv.innerText = 'Predicted Digit: ' + data.predicted_digit;
+                    } else {
+                        resultDiv.innerText = 'Error occurred during prediction. Please try again.';
+                    }
+                })
+                .catch(error => {
+                    // Handle errors and display appropriate message
+                    console.error('Error:', error);
+                    resultDiv.innerText = 'Error occurred during prediction. Please try again.';
+                });
+            };
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            resultDiv.innerText = '';
+        }
+    </script>
+</body>
+
+</html>

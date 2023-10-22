@@ -7,8 +7,6 @@
     <title>Handwritten Digit Recognition</title>
     <style>
         canvas {
-            width: 200px; 
-            height: 200px; 
             border: 1px solid black;
         }
     </style>
@@ -16,9 +14,9 @@
 
 <body>
     <h1>Handwritten Digit Recognition</h1>
-    <canvas id="canvas" width="150" height="150"></canvas>
+    <canvas id="canvas" width="280" height="280"></canvas>
     <button id="predict-button">Predict</button>
-    <button id="clear-button">Clear</button>
+    <!--<button id="clear-button">Clear</button>-->
 
     <div id="result"></div>
 
@@ -50,7 +48,7 @@
             if (!drawing) return;
         
             // Increase canvas resolution for smoother drawing
-            const scale = 5; // Adjust this scale factor as needed
+            const scale = 10; // Adjust this scale factor as needed
             ctx.lineWidth = 1 * scale;
             ctx.lineCap = 'round';
             ctx.strokeStyle = 'black';

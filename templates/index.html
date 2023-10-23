@@ -6,20 +6,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Handwritten Digit Recognition</title>
     <style>
+        body{
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #1a2035;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        h1{
+            height: 100px;
+            color: #ffffff;
+        }
+        #frame{
+            width: 100%;
+            height: calc(100% - 200px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #frame_select{
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .box{
+            width: 500px;
+            height: 500px;
+            border: 3px solid #ebd31b;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
         canvas {
             border: 1px solid black;
+        }
+        .form{
+            width: 300px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .form button{
+            color: #fff;
+            width: 200px;
+            height: 75px;
+            font-size: 25px;
+            border: 0px solid transparent;
+            border-radius: 5px;
+            background-color: #ebd31b;
+            transition: .4s ease;
+        }
+        .form button:hover{
+            transform: scale(1.1);
+        }
+        #clear-button{
+            color: red;
+            font-size: 20px;
+            width: 100px;
+            height: 50px;
+            border: 2.5px solid red;
+            border-radius: 5px;
+            background-color: transparent;
+        }
+        #result{
+            display=none;
+            color: #fff;
+            font-size: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+        .dot {
+            width: 50px;
+            height: 50px;
+            background-color: #ebd31b;
+            border-radius: 50%;
+            margin: 0 10px;
+            opacity: 0;
+            animation: bounce 1s infinite;
+        }
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+                opacity: 0.3;
+            }
+            40% {
+                transform: translateY(-30px);
+                opacity: 1;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>Handwritten Digit Recognition</h1>
-    <canvas id="canvas" width="280" height="280"></canvas>
-    <button id="predict-button">Predict</button>
-    <button id="clear-button">Clear</button>
-
-    <div id="result"></div>
-
+    <h1>Handwritten Digit</h1>
+    <div id="frame">
+        <div id="frame_select">
+            <canvas id="canvas" width="500" height="500"  class='box'></canvas>
+            <div class='form'>
+                <button id="predict-button">Predict</button>
+                <button id="clear-button">Clear</button>
+            </div>
+            <div class='box'>
+                <div id="result" ></div>
+                <div class="loader" id='points'>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </img>
+    </div>
     <script>
         const scaleFactor = 10;  // Adjust this value as needed
         const canvas = document.getElementById('canvas');
@@ -31,7 +148,10 @@
         // Set canvas background color to white
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+        //points & result
+        const points = document.getElementById('points');
+        const result = document.getElementById('result');
+        //canvas
         canvas.addEventListener('mousedown', () => {
             drawing = true;
         });
@@ -48,7 +168,7 @@
             if (!drawing) return;
         
             // Increase canvas resolution for smoother drawing
-            const scale = 10; // Adjust this scale factor as needed
+            const scale = 20; // Adjust this scale factor as needed
             ctx.lineWidth = 1 * scale;
             ctx.lineCap = 'round';
             ctx.strokeStyle = 'black';
@@ -89,11 +209,13 @@
             // Set canvas background color to white
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            //points
+            points.style.display='flex';
+            result.style.display='none';
         });
 
         function sendImageForPrediction(imageData) {
             // Display loading indicator while processing
-            resultDiv.innerText = 'Predicting...';
 
             const img = new Image();
             img.src = imageData;
@@ -121,17 +243,20 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    //points
+                    points.style.display='none';
+                    result.style.display='flex';
                     // Display the prediction result
                     if (data.predicted_digit !== undefined) {
-                        resultDiv.innerText = 'Predicted Digit: ' + data.predicted_digit;
+                        resultDiv.innerText = data.predicted_digit;
                     } else {
-                        resultDiv.innerText = 'Error occurred during prediction. Please try again.';
+                        resultDiv.innerText = 'Error';
                     }
                 })
                 .catch(error => {
                     // Handle errors and display appropriate message
                     console.error('Error:', error);
-                    resultDiv.innerText = 'Error occurred during prediction. Please try again.';
+                    resultDiv.innerText = 'Error';
                 });
             };
         }
@@ -142,5 +267,4 @@
         }
     </script>
 </body>
-
 </html>

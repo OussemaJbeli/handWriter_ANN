@@ -16,7 +16,7 @@
     <h1>Handwritten Digit Recognition</h1>
     <canvas id="canvas" width="280" height="280"></canvas>
     <button id="predict-button">Predict</button>
-    <!--<button id="clear-button">Clear</button>-->
+    <button id="clear-button">Clear</button>
 
     <div id="result"></div>
 
@@ -86,6 +86,9 @@
 
         clearButton.addEventListener('click', () => {
             clearCanvas();
+            // Set canvas background color to white
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         });
 
         function sendImageForPrediction(imageData) {

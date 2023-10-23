@@ -42,14 +42,68 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            background-color: #fff;
+        }
+        #inputs .buttons{
+            position: absolute;
+            top: 130px;
+            left: -470px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: end;
+            height: 50px;
+            width: 100%;
+        }
+        #inputs .buttons button{
+            transition: .4s ease;
+            margin:0 10px;
+            border: 2.5px solid #ebd31b;
+            border-radius: 10px 10px 0 0 ;
+            cursor: pointer;
+        }
+
+        .underbox{
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
         }
         canvas {
-            border: 1px solid black;
+            border-radius: 20px;
         }
-        .form{
+        .inform{
             width: 300px;
             height: 300px;
+        }
+        form{
+            width: 100%;
+            height: 100%;
             display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+        }
+        form label{
+            color: #fff;
+            font-size: 25px;
+        }
+        form input{
+            color: #ebd31b;
+            font-size: 17px;
+        }
+        form button{
+            color: #fff;
+            width: 150px;
+            height: 50px;
+            font-size: 20px;
+            border: 0px solid transparent;
+            border-radius: 5px;
+            background-color: #ebd31b;
+        }
+        .form{
+            width: 100%;
+            height: 100%;
+            display: none;
             flex-direction: column;
             justify-content: space-around;
             align-items: center;
@@ -78,7 +132,7 @@
         }
         #result{
             display=none;
-            color: #fff;
+            color: black;
             font-size: 300px;
             display: flex;
             justify-content: center;
@@ -122,10 +176,24 @@
     <h1>Handwritten Digit</h1>
     <div id="frame">
         <div id="frame_select">
-            <canvas id="canvas" width="500" height="500"  class='box'></canvas>
-            <div class='form'>
-                <button id="predict-button">Predict</button>
-                <button id="clear-button">Clear</button>
+            <div class="box" id='inputs'>
+                <div class="buttons" >
+                    <button id="HandDrow" class='pages_button'>HandDrow</button>
+                    <button id="Select_IMG" class='pages_button'>Select IMG</button>
+                </div>
+                <img id="selected-image" class='underbox'>
+                <canvas id="canvas" width="500" height="500"  class='underbox'></canvas>
+            </div>
+            <div class='inform'>
+                <div class='form' id='formCanvas'>
+                    <button id="predict-button">Predict</button>
+                    <button id="clear-button">Clear</button>
+                </div>
+                <form  id='formIMG' action="/predict" method="post" enctype="multipart/form-data">
+                    <label for="image-file">Select Image:</label>
+                    <input type="file" id="image-file" name="image" accept="image/*" required>
+                    <button type="submit">Predict</button>
+                </form>
             </div>
             <div class='box'>
                 <div id="result" ></div>
@@ -135,7 +203,7 @@
                     <div class="dot"></div>
                 </div>
             </div>
-        </img>
+        </div>
     </div>
     <script>
         const scaleFactor = 10;  // Adjust this value as needed
@@ -148,6 +216,60 @@
         // Set canvas background color to white
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        //var for pagination between drow and file
+        let HandDrow = document.getElementById('HandDrow');
+        let Select_IMG = document.getElementById('Select_IMG');
+        let selectedimage = document.getElementById('selected-image');
+        let formIMG = document.getElementById('formIMG');
+        let formCanvas = document.getElementById('formCanvas');
+
+        HandDrow.onclick = function() {
+            pagechange('drow');
+        };
+        Select_IMG.onclick = function() {
+            pagechange('IMG');
+        };
+
+        pagechange('drow');
+        
+        function pagechange(pages){
+            if (pages == "drow"){
+                HandDrow.style.color='#fff';
+                HandDrow.style.width='150px';
+                HandDrow.style.height='50px';
+                HandDrow.style.fontSize='18px';
+                HandDrow.style.backgroundColor='#ebd31b';
+
+                Select_IMG.style.color='#d7d1d1';
+                Select_IMG.style.width='130px';
+                Select_IMG.style.height='40px';
+                Select_IMG.style.fontSize='14px';
+                Select_IMG.style.backgroundColor='transparent';
+
+                canvas.style.display='flex';
+                selectedimage.style.display='none';
+                formIMG.style.display='none';
+                formCanvas.style.display='flex';
+            }
+            if (pages == "IMG"){
+                Select_IMG.style.color='#fff';
+                Select_IMG.style.width='150px';
+                Select_IMG.style.height='50px';
+                Select_IMG.style.fontSize='18px';
+                Select_IMG.style.backgroundColor='#ebd31b';
+
+                HandDrow.style.color='#d7d1d1';
+                HandDrow.style.width='130px';
+                HandDrow.style.height='40px';
+                HandDrow.style.fontSize='14px';
+                HandDrow.style.backgroundColor='transparent';
+
+                canvas.style.display='none';
+                selectedimage.style.display='flex';
+                formIMG.style.display='flex';
+                formCanvas.style.display='none';
+            }
+        }
         //points & result
         const points = document.getElementById('points');
         const result = document.getElementById('result');
@@ -215,8 +337,6 @@
         });
 
         function sendImageForPrediction(imageData) {
-            // Display loading indicator while processing
-
             const img = new Image();
             img.src = imageData;
 
@@ -235,13 +355,6 @@
                 const resizedImageData = resizedCanvas.toDataURL('image/png');
 
                 fetch('/predictDrow', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ image: resizedImageData })
-                })
-                fetch('/predictIMG', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -272,6 +385,41 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             resultDiv.innerText = '';
         }
+
+        document.querySelector('form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            points.style.display='none';
+            result.style.display='flex';
+            var imageElement = document.getElementById("selected-image");
+            var fileInput = document.getElementById("image-file");
+            var file = fileInput.files[0];
+            
+            // Check if a file is selected
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    // Update the src attribute of the img element with the selected image data URL
+                    imageElement.src = e.target.result;
+                };
+                // Read the selected file as a data URL
+                reader.readAsDataURL(file);
+            }
+            
+            var formData = new FormData(this);
+            fetch('/predictIMG', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerText = data.predicted_digit;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').innerText = 'Error';
+            });
+        });    
+
     </script>
 </body>
 </html>

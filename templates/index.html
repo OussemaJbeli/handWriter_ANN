@@ -234,7 +234,14 @@
 
                 const resizedImageData = resizedCanvas.toDataURL('image/png');
 
-                fetch('/predict', {
+                fetch('/predictDrow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ image: resizedImageData })
+                })
+                fetch('/predictIMG', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

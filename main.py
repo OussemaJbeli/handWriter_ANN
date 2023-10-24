@@ -1,19 +1,21 @@
 import os
 import base64
-from io import BytesIO
-from tkinter import Image
 from flask import Flask, request, jsonify, render_template
 import cv2
 import tensorflow as tf
 import numpy as np
 
 app = Flask(__name__)
+
 model = tf.keras.models.load_model('training.model')
+
 UPLOAD_FOLDER = 'uploads/test/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+#********************** analyse and tretement of img*****************
 
 def predict_digit(image_path):
     try:

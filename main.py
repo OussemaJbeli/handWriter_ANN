@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify, render_template
 import cv2
 import tensorflow as tf
 import numpy as np
+from retraining import retrainning_fun
 
 app = Flask(__name__)
 
@@ -60,6 +61,24 @@ def predictIMG():
         predicted_digit = predict_digit(image_path)
         if predicted_digit is not None:
             return jsonify({'predicted_digit': predicted_digit})
+        else:
+            return jsonify({'error': 'Error occurred during prediction.'})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    
+#********************** retraining *****************
+@app.route('/predictRetraining', methods=['POST'])
+def predictRetraining():
+    try:
+        print('*************function work************')
+        label = request.files['label']
+        print('ttttttttttt',label)
+        image_path = 'uploads/test/image.png'
+        train_digit = retrainning_fun(image_path,label)
+        print('ttttttttttt',train_digit)
+        
+        if train_digit is not None:
+            return jsonify({'train_digit': train_digit})
         else:
             return jsonify({'error': 'Error occurred during prediction.'})
     except Exception as e:
